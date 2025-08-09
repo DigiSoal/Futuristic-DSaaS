@@ -6,8 +6,7 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily: {
-      inter: ['Inter', 'sans-serif'],
-      glitch: ['VT323', 'monospace'],
+      poppins: ['Poppins', 'sans-serif'],
     }
   },
   plugins: [],
