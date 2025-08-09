@@ -1,177 +1,174 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-// Helper function to create a glitch effect on a string
-const glitchText = (text, progress) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:",.<>/?';
-  const glitchLength = Math.floor(progress * text.length);
-  const glitchedChars = [];
-  for (let i = 0; i < glitchLength; i++) {
-    glitchedChars.push(chars.charAt(Math.floor(Math.random() * chars.length)));
-  }
-  return glitchedChars.join('') + text.substring(glitchLength);
-};
-
 // Main App component
 const App = () => {
-  const scrollRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  // Function to handle the horizontal scroll event
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      setScrollPosition(scrollRef.current.scrollLeft);
-    }
-  };
-
-  // Set up the scroll event listener
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (element) {
-      element.addEventListener('scroll', handleScroll);
-      return () => {
-        element.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, []);
-
   const sections = [
     { id: 'home', title: 'Home', component: <HomePage /> },
-    { id: 'about', title: 'About', component: <AboutPage /> },
-    { id: 'services', title: 'Services', component: <ServicesPage /> },
+    { id: 'about', title: 'About Us', component: <AboutPage /> },
+    { id: 'services', title: 'Our Services', component: <ServicesPage /> },
     { id: 'pricing', title: 'Pricing', component: <PricingPage /> },
   ];
 
+  // Custom CSS for animations and holographic effects
+  const style = `
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      backdrop-filter: blur(20px);
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .holographic-gradient {
+      background: linear-gradient(
+        45deg,
+        #00aaff,
+        #ff00aa,
+        #f0ff00,
+        #00aaff
+      );
+      background-size: 400% 400%;
+      animation: gradient-animation 15s ease infinite;
+    }
+
+    .text-holographic-gradient {
+      background: linear-gradient(
+        45deg,
+        #00aaff,
+        #ff00aa,
+        #f0ff00
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    @keyframes gradient-animation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+      opacity: 0;
+    }
+  `;
+
+  // Inject the CSS into the document head
+  useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.textContent = style;
+    document.head.appendChild(styleTag);
+    return () => {
+      document.head.removeChild(styleTag);
+    };
+  }, []);
+
   return (
-    <div className="bg-glitch-hues text-neutral-50 font-inter min-h-screen">
-      <div
-        ref={scrollRef}
-        className="flex overflow-x-scroll snap-x snap-mandatory h-screen w-screen hide-scrollbar"
-      >
-        {sections.map((section, index) => {
-          const isNextSectionVisible =
-            scrollPosition > index * window.innerWidth - (window.innerWidth / 3) &&
-            scrollPosition < (index + 1) * window.innerWidth;
+    <div className="relative min-h-screen text-white bg-gray-900 overflow-x-hidden">
+      {/* Holographic animated background */}
+      <div className="absolute inset-0 holographic-gradient opacity-20"></div>
 
-          // Calculate the progress of the transition for the glitch effect
-          const transitionProgress = isNextSectionVisible
-            ? Math.max(0, (scrollPosition - (index * window.innerWidth - (window.innerWidth / 3))) / (window.innerWidth / 3))
-            : 0;
-          
-          const nextSectionTitle = sections[index + 1] ? sections[index + 1].title : '';
-          const glitchedNextTitle = glitchText(nextSectionTitle, transitionProgress);
-
-          return (
-            <div
-              key={section.id}
-              id={section.id}
-              className="relative flex-shrink-0 w-screen h-full snap-center"
-            >
-              {/* This is the main content area for each section */}
-              <div className="p-12 h-full overflow-y-auto">
-                {section.component}
-              </div>
-
-              {/* The overlapping title for the next section */}
-              {isNextSectionVisible && sections[index + 1] && (
-                <div
-                  style={{
-                    opacity: transitionProgress,
-                    transform: `translateX(${-scrollPosition + (index * window.innerWidth)}px)`,
-                  }}
-                  className="absolute top-1/2 left-[calc(100vw-10vw)] -translate-y-1/2 text-9xl font-bold text-neutral-800 transition-all duration-300 pointer-events-none"
-                >
-                  <span className="text-transparent font-glitch" style={{ WebkitTextStroke: '2px rgb(0, 255, 255, 0.5)', opacity: transitionProgress }}>
-                    {glitchedNextTitle}
-                  </span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {sections.map((section, index) => (
+        <section
+          key={section.id}
+          id={section.id}
+          className="relative z-10 flex items-center justify-center min-h-screen p-8 lg:p-16"
+        >
+          {section.component}
+        </section>
+      ))}
     </div>
   );
 };
 
 // --- Page Components ---
 
-const HeroSection = ({ title, subtitle, buttons }) => (
-  <div className="flex flex-col items-start justify-center h-full max-w-2xl px-8">
-    <h1 className="text-6xl md:text-8xl font-bold mb-4 animate-fade-in-up font-glitch text-cyan-400">
-      {title}
+const HomePage = () => (
+  <div className="text-center fade-in">
+    <h1 className="text-4xl md:text-7xl font-bold mb-4 text-holographic-gradient">
+      Crafting Digital Excellence
     </h1>
-    <p className="text-xl md:text-2xl text-neutral-400 mb-8 animate-fade-in-up-delay-1">
-      {subtitle}
+    <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+      We design and build breathtaking digital experiences with an emphasis on clarity, elegance, and visionary technology.
     </p>
-    <div className="flex space-x-4 animate-fade-in-up-delay-2">
-      {buttons.map((button, index) => (
-        <button
-          key={index}
-          className={twMerge(
-            "px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wide",
-            button.className
-          )}
-        >
-          {button.text}
-        </button>
-      ))}
+    <div className="flex justify-center space-x-4">
+      <a href="#services" className="px-8 py-3 rounded-full font-semibold text-white holographic-gradient transition-all duration-300 hover:scale-105">
+        Explore Services
+      </a>
+      <a href="#about" className="px-8 py-3 rounded-full font-semibold text-white border-2 border-white/20 transition-all duration-300 hover:bg-white/10">
+        Learn More
+      </a>
     </div>
   </div>
 );
 
-const HomePage = () => (
-  <HeroSection
-    title="Design the Future"
-    subtitle="We are a digital agency specializing in futuristic web experiences and cutting-edge design."
-    buttons={[
-      { text: "Get Started", className: "bg-cyan-600 text-white hover:bg-cyan-700 transition" },
-      { text: "Learn More", className: "bg-neutral-800 text-neutral-200 hover:bg-neutral-700 transition" },
-    ]}
-  />
-);
-
 const AboutPage = () => (
-  <div className="flex flex-col items-start justify-center h-full max-w-3xl px-8">
-    <h2 className="text-4xl md:text-6xl font-bold mb-4 font-glitch text-cyan-400">Our Mission</h2>
-    <p className="text-lg md:text-xl text-neutral-400 mb-8">
-      To push the boundaries of digital design, creating immersive and intuitive experiences that connect people to technology in meaningful new ways. We believe in a future where user interfaces are not just functional, but truly a work of art.
+  <div className="max-w-4xl glass-card rounded-3xl p-8 md:p-12 fade-in">
+    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-holographic-gradient">
+      Our Vision
+    </h2>
+    <p className="text-gray-300 text-lg mb-6">
+      Our mission is to bridge the gap between imagination and reality by crafting digital solutions that are not just functional but truly inspire. We believe in a future where technology is a seamless extension of human creativity.
     </p>
-    <h3 className="text-3xl md:text-4xl font-bold mb-4 font-glitch text-cyan-400">Our Vision</h3>
-    <p className="text-lg md:text-xl text-neutral-400">
-      To be a leading force in the next generation of web development, shaping the digital landscape with innovative solutions and a relentless pursuit of excellence.
+    <p className="text-gray-300 text-lg">
+      Founded on the principles of innovation and elegance, our team of designers and developers are dedicated to building a new standard of digital artistry.
     </p>
   </div>
 );
 
 const ServicesPage = () => (
-  <div className="flex flex-col h-full items-start px-8 py-12 md:py-24 max-w-4xl">
-    <h2 className="text-4xl md:text-6xl font-bold mb-8 font-glitch text-cyan-400">What We Do</h2>
-    <div className="grid md:grid-cols-2 gap-8">
+  <div className="max-w-6xl w-full fade-in">
+    <h2 className="text-3xl md:text-5xl font-bold text-center mb-10 text-holographic-gradient">
+      Services We Offer
+    </h2>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <ServiceCard
-        title="Web Development"
-        description="Crafting bespoke websites and web applications with a focus on performance, scalability, and security."
+        title="Bespoke Design"
+        description="Crafting custom, high-fidelity UI/UX designs that elevate your brand and engage your audience."
       />
       <ServiceCard
-        title="UI/UX Design"
-        description="Designing intuitive, user-centric interfaces that are not only beautiful but also a joy to use."
+        title="Advanced Development"
+        description="Building scalable and secure web applications with modern frameworks and cutting-edge technology."
       />
       <ServiceCard
-        title="Digital Strategy"
-        description="Developing a clear and actionable digital roadmap to help your business achieve its goals and reach new audiences."
+        title="Brand Experience"
+        description="Developing a cohesive digital identity that resonates with your values and captivates your customers."
       />
       <ServiceCard
-        title="Brand Identity"
-        description="Building a strong, cohesive brand identity that resonates with your target market and sets you apart from the competition."
+        title="3D & Motion Graphics"
+        description="Integrating stunning 3D models and smooth animations to bring your digital presence to life."
+      />
+      <ServiceCard
+        title="Strategic Consulting"
+        description="Providing expert guidance to define your digital strategy and achieve your business goals."
+      />
+      <ServiceCard
+        title="Performance Optimization"
+        description="Ensuring your application is fast, responsive, and provides a flawless user experience."
       />
     </div>
   </div>
 );
 
 const ServiceCard = ({ title, description }) => (
-  <div className="bg-neutral-900 rounded-2xl p-6 transition-all duration-300 hover:bg-neutral-800">
-    <h3 className="text-2xl font-bold mb-2 font-glitch text-cyan-400">{title}</h3>
-    <p className="text-neutral-400">{description}</p>
+  <div className="glass-card rounded-3xl p-6 transition-all duration-300 hover:bg-white/10 hover:border-white/30 cursor-pointer">
+    <h3 className="text-2xl font-semibold mb-2 text-white">
+      {title}
+    </h3>
+    <p className="text-gray-400">{description}</p>
   </div>
 );
 
@@ -189,7 +186,7 @@ const PricingPage = () => {
   const [conversionRate, setConversionRate] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Default prices are now in ZAR
+  // Default prices are in ZAR
   const basePrices = {
     basic: 5000,
     standard: 12000,
@@ -227,7 +224,6 @@ const PricingPage = () => {
         }
       } catch (error) {
         console.error('Error fetching currency data:', error);
-        // Fallback to default ZAR and display error message
       } finally {
         setIsLoading(false);
       }
@@ -243,7 +239,6 @@ const PricingPage = () => {
         total += featurePrices[feature];
       }
     }
-    // Apply the conversion rate to the total
     return (total * conversionRate).toFixed(2);
   };
 
@@ -254,17 +249,16 @@ const PricingPage = () => {
   const getPlanDescription = (plan) => {
     switch(plan) {
       case 'basic':
-        return 'Ideal for startups and small businesses needing a strong online presence.';
+        return 'Ideal for startups needing a stunning digital presence.';
       case 'standard':
-        return 'Our most popular option for growing businesses looking for more functionality.';
+        return 'Our most popular option for growing businesses looking for advanced features.';
       case 'premium':
-        return 'For enterprise-level clients who require custom, complex, and high-performance solutions.';
+        return 'For enterprise clients who require custom, complex, and high-performance solutions.';
       default:
         return '';
     }
   };
 
-  // Helper function for formatting currency
   const formatCurrency = (amount) => {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return `${currencySymbol}0.00`;
@@ -273,52 +267,54 @@ const PricingPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-8 py-12 md:py-24 max-w-4xl mx-auto text-center">
-        <h2 className="text-4xl md:text-6xl font-bold mb-4 font-glitch text-cyan-400">Loading Pricing...</h2>
-        <p className="text-lg md:text-xl text-neutral-400">Fetching local currency rates.</p>
+      <div className="flex flex-col items-center justify-center p-8 glass-card rounded-3xl w-full max-w-md text-center fade-in">
+        <h2 className="text-3xl font-bold mb-4 text-holographic-gradient">
+          Loading...
+        </h2>
+        <p className="text-gray-300">Fetching local currency rates for a tailored quote.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center py-12 md:py-24 h-full max-w-4xl mx-auto overflow-y-auto hide-scrollbar">
-      <h2 className="text-4xl md:text-6xl font-bold mb-4 text-center font-glitch text-cyan-400">Interactive Quote Builder</h2>
-      <p className="text-lg md:text-xl text-neutral-400 mb-12 text-center">
+    <div className="max-w-4xl w-full glass-card rounded-3xl p-8 md:p-12 fade-in">
+      <h2 className="text-3xl md:text-5xl font-bold text-center mb-8 text-holographic-gradient">
+        Interactive Quote Builder
+      </h2>
+      <p className="text-center text-gray-300 text-lg mb-8">
         Prices are displayed in your local currency ({currency}). Select a base plan and customize your features to get an instant estimate.
       </p>
 
-      {/* Plan Selection */}
-      <div className="w-full mb-12">
-        <h3 className="text-2xl font-bold mb-4 font-glitch text-cyan-400">1. Choose a Plan</h3>
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="w-full mb-8">
+        <h3 className="text-2xl font-bold mb-4">1. Choose a Plan</h3>
+        <div className="grid md:grid-cols-3 gap-4">
           {['basic', 'standard', 'premium'].map(plan => (
             <button
               key={plan}
               onClick={() => setSelectedPlan(plan)}
               className={twMerge(
-                "flex-1 p-6 rounded-2xl transition-all duration-300 text-left",
-                selectedPlan === plan ? "bg-cyan-600 text-white scale-105" : "bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+                "p-6 rounded-3xl transition-all duration-300 text-left glass-card",
+                selectedPlan === plan ? "holographic-gradient shadow-xl" : "hover:bg-white/10"
               )}
             >
-              <h4 className="text-xl font-bold capitalize font-glitch text-cyan-400">{plan}</h4>
-              <p className="text-neutral-400 text-sm">{getPlanDescription(plan)}</p>
+              <h4 className="text-xl font-bold capitalize">{plan}</h4>
+              <p className="text-gray-400 text-sm">{getPlanDescription(plan)}</p>
               <span className="text-3xl font-bold mt-4 block">{formatCurrency(basePrices[plan] * conversionRate)}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Feature Selection */}
-      <div className="w-full mb-12">
-        <h3 className="text-2xl font-bold mb-4 font-glitch text-cyan-400">2. Add-on Features</h3>
+      <div className="w-full mb-8">
+        <h3 className="text-2xl font-bold mb-4">2. Add-on Features</h3>
         <div className="grid md:grid-cols-2 gap-4">
           {Object.entries(featurePrices).map(([feature, price]) => (
             <label
               key={feature}
               htmlFor={feature}
               className={twMerge(
-                "flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all duration-300",
-                selectedFeatures[feature] ? "bg-neutral-700" : "bg-neutral-900 hover:bg-neutral-800"
+                "flex items-center justify-between p-4 rounded-3xl cursor-pointer transition-all duration-300 glass-card",
+                selectedFeatures[feature] ? "bg-white/10" : "hover:bg-white/5"
               )}
             >
               <div className="flex items-center">
@@ -327,11 +323,11 @@ const PricingPage = () => {
                   id={feature}
                   checked={selectedFeatures[feature]}
                   onChange={() => handleFeatureToggle(feature)}
-                  className="mr-3 w-5 h-5 text-cyan-600 bg-neutral-800 border-neutral-600 rounded focus:ring-cyan-500 focus:ring-2"
+                  className="mr-3 w-5 h-5 appearance-none rounded border border-white/30 checked:bg-holographic-gradient checked:border-transparent transition-all duration-200"
                 />
                 <div className="flex flex-col">
-                  <span className="text-lg capitalize">{feature.replace('-', ' ')}</span>
-                  <span className="text-sm text-neutral-400">Add an extra {formatCurrency(price * conversionRate)}</span>
+                  <span className="text-lg capitalize text-white">{feature.replace('-', ' ')}</span>
+                  <span className="text-sm text-gray-400">Add an extra {formatCurrency(price * conversionRate)}</span>
                 </div>
               </div>
             </label>
@@ -339,15 +335,13 @@ const PricingPage = () => {
         </div>
       </div>
 
-      {/* Total Display */}
-      <div className="w-full p-8 bg-neutral-900 rounded-2xl shadow-xl">
-        <div className="flex justify-between items-center">
-          <span className="text-3xl font-bold font-glitch text-cyan-400">Total Estimate:</span>
-          <span className="text-5xl font-bold text-cyan-500">{formatCurrency(calculateTotal())}</span>
+      <div className="w-full p-8 rounded-3xl glass-card">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <span className="text-3xl md:text-4xl font-bold text-white">Total Estimate:</span>
+          <span className="text-4xl md:text-5xl font-bold text-holographic-gradient">
+            {formatCurrency(calculateTotal())}
+          </span>
         </div>
-        <p className="text-sm text-neutral-500 mt-2">
-          *This is an estimate. A final quote will be provided after a detailed consultation.
-        </p>
       </div>
     </div>
   );
